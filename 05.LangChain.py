@@ -26,4 +26,22 @@ from langchain_community.document_loaders import PyPDFLoader
 loader = PyPDFLoader('/workspaces/LLMTest/Owners_Manual.pdf') 
 pages = loader.load_and_split()
 
-print(pages[0].page_content)
+# print(pages[0].page_content)
+
+import tiktoken 
+tokenizer = tiktoken.get_encoding('cl100k_base')  
+def tiktoken_len(text):
+    tokens = tokenizer.encode(text)   
+    return len(tokens)
+
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+text_splitter = RecursiveCharacterTextSplitter(     
+    chunk_size=1000, 
+    chunk_overlap=100, 
+    length_function=tiktoken_len 
+) 
+
+texts = text_splitter.split_documents(pages)
+
+print("pages: ", len(pages))
+print("texts: ", len(texts))
