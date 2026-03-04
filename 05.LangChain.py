@@ -26,7 +26,7 @@ from langchain_community.document_loaders import PyPDFLoader
 loader = PyPDFLoader('/workspaces/LLMTest/Owners_Manual.pdf') 
 pages = loader.load_and_split()
 
-# print(pages[0].page_content)
+# # print(pages[0].page_content)
 
 import tiktoken 
 tokenizer = tiktoken.get_encoding('cl100k_base')  
@@ -43,5 +43,26 @@ text_splitter = RecursiveCharacterTextSplitter(
 
 texts = text_splitter.split_documents(pages)
 
-print("pages: ", len(pages))
-print("texts: ", len(texts))
+# print("pages: ", len(pages))
+# print("texts: ", len(texts))
+
+EMBEDDING_MODEL_NAME = 'text-embedding-3-large'
+
+from langchain_openai import AzureOpenAIEmbeddings  
+embedding_model = AzureOpenAIEmbeddings(
+                        azure_deployment=EMBEDDING_MODEL_NAME, 
+                        chunk_size=1000)
+
+from numpy import dot 
+from numpy.linalg import norm 
+import numpy as np  
+def cos_sim(A, B):   
+    return dot(A, B)/(norm(A)*norm(B))
+
+from langchain_community.vectorstores import Chroma  
+
+db = Chroma.from_documents(
+             texts, 
+             embedding=embedding_model,
+             persist_directory="./chroma_db"
+     )
